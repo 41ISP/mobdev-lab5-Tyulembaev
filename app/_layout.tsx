@@ -7,10 +7,12 @@ import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Button, Text, TextInput, View } from 'react-native';
+import { Button, FlatList, Text, TextInput, View } from 'react-native';
 import useTodoStore from '@/shared/useTodoStore';
-import { nanoid } from 'nanoid';
+import { customAlphabet } from 'nanoid/non-secure';
 import ITodo from '@/Interfaces/ITodo';
+import layout_styles from './_layout-styles';
+import Todo from '@/components/Todo';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -21,31 +23,59 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-
-
   const {todos, addTodo, deleteTodo} = useTodoStore();
   const [titleTodo, setTitleTodo] = useState("") 
+  
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
+
+  if (!loaded) {
+    return null;
+  }
+
 
   const onHandleInput = (text : string) => {
     setTitleTodo(text)
   }
 
   const createTodo = () => {
-    const todo = {id: nanoid.toString(), title : titleTodo, isCompleted : false} as ITodo
+    const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 10); 
+    console.log(nanoid());
+    const todo = {id: nanoid(), title : titleTodo, isCompleted : false} as ITodo
+    setTitleTodo("")
     addTodo(todo);
   }
 
+  const styles = layout_styles;
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <View>
-        <TextInput
-            placeholder="Введите задачу"
-            value={titleTodo}
-            onChangeText={onHandleInput} // Обработка изменения текста
-            onSubmitEditing={createTodo} // Отправка по нажатию Enter (на мобильной клавиатуре)
-            returnKeyType="done" // Настройка кнопки "Enter" на клавиатуре
-        />
-        <Button title="Добавить" onPress={createTodo} />
+      <View style={styles.container}>
+        <View style={styles.input_box}>
+          <TextInput
+              style={styles.input}
+              placeholder="Введите задачу"
+              value={titleTodo}
+              onChangeText={onHandleInput} // Обработка изменения текста
+              onSubmitEditing={createTodo} // Отправка по нажатию Enter (на мобильной клавиатуре)
+              returnKeyType="done" // Настройка кнопки "Enter" на клавиатуре
+          />
+          <Button title="Добавить" onPress={createTodo} />
+        </View>
+        <View style={styles.todoList}>
+
+        <FlatList
+          data={todos}
+          keyExtractor={(item) => item.id}
+          renderItem={(
+            {item},
+          ) => <Todo todo={item}/>}
+          />
+
+        </View>
       </View>
     </ThemeProvider>
   );
