@@ -31,6 +31,12 @@ const layout_styles = StyleSheet.create({
         paddingHorizontal: 15,
         borderRadius: 5,
     },
+    dropdown: {
+        margin: 16,
+        height: 50,
+        borderBottomColor: 'gray',
+        borderBottomWidth: 0.5,
+      },
 });
 
 export default layout_styles;
